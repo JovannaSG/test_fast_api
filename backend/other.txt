@@ -1,0 +1,130 @@
+# ------------------- СОЗДАНИЕ 8 ТАБЛИЦ --------------------------------------------------------
+with sql.connect ('db.db') as db:
+    curs = db.cursor()
+    curs.execute("""DROP TABLE IF EXISTS 'User';""")
+    db.commit()
+    curs.execute("""CREATE TABLE IF NOT EXISTS 'User' (
+	                'user_id' INTEGER PRIMARY KEY NOT NULL,
+	                'first_name' TEXT,
+	                'last_name' TEXT
+                );""")
+    db.commit()
+
+    curs.execute("""DROP TABLE IF EXISTS 'Step_type';""")
+    db.commit()
+    curs.execute("""CREATE TABLE IF NOT EXISTS 'Step_type' (
+	                'step_type_id' INTEGER PRIMARY KEY AUTOINCREMENT,
+	                'step_type' TEXT
+                );""")
+        
+    curs.execute("""DROP TABLE IF EXISTS 'Module';""")
+    db.commit()
+    curs.execute("""CREATE TABLE IF NOT EXISTS 'Module' (
+	                'module_id' INTEGER PRIMARY KEY NOT NULL,
+	                'module_position' INTEGER
+                );""")
+    db.commit()
+
+    curs.execute("""DROP TABLE IF EXISTS 'Lesson';""")
+    db.commit() 
+    curs.execute("""CREATE TABLE IF NOT EXISTS 'Lesson' (
+	                'lesson_id' INTEGER PRIMARY KEY NOT NULL,
+	                'lesson_position' INTEGER,
+  	                'module_id' INTEGER,
+                    FOREIGN KEY ('module_id') REFERENCES module ('module_id') ON DELETE RESTRICT
+                );""")
+    db.commit()
+
+    curs.execute("""DROP TABLE IF EXISTS 'Step';""")
+    db.commit()
+    curs.execute("""CREATE TABLE IF NOT EXISTS 'Step' (
+	                'step_id' INTEGER PRIMARY KEY NOT NULL,
+	                'step_position' INTEGER,
+	                'step_cost' INTEGER,
+    	            'lesson_id' INTEGER,
+  	                'step_type' INTEGER,
+                    FOREIGN KEY ('lesson_id') REFERENCES lesson('lesson_id') ON DELETE RESTRICT,
+                    FOREIGN KEY ('step_type') REFERENCES step_type('step_type') ON DELETE RESTRICT
+                );""")
+    db.commit()
+
+    curs.execute("""DROP TABLE IF EXISTS 'Step_user';""")
+    db.commit()
+    curs.execute("""CREATE TABLE IF NOT EXISTS 'Step_user' (
+  	                'step_id' INTEGER,
+  	                'user_id' INTEGER,
+	                FOREIGN KEY ('step_id') REFERENCES step('step_id') ON DELETE CASCADE,
+	                FOREIGN KEY ('user_id') REFERENCES user('user_id') ON DELETE CASCADE
+                );""")
+    db.commit()
+    
+    curs.execute("""DROP TABLE IF EXISTS 'Comment';""")
+    db.commit()
+    curs.execute("""CREATE TABLE IF NOT EXISTS 'Comment' (
+                        'comment_id' INTEGER PRIMARY KEY NOT NULL,
+                        'parent_comment_id' TEXT,
+                        'time_utc' INTEGER,                                   
+                        'deleted' TEXT,
+                        'text_clear' TEXT,                               
+                        'user_step_id' INTEGER,
+                        FOREIGN KEY ('user_step_id') REFERENCES step_user('user_step_id') ON DELETE CASCADE
+                    );""")
+    db.commit() #https://metanit.com/sql/sqlite/6.3.php
+
+    curs.execute("""DROP TABLE IF EXISTS 'Solution';""")
+    db.commit()
+    curs.execute("""CREATE TABLE IF NOT EXISTS 'Solution' (
+                    'attempt_time' INTEGER,
+                    'submission_time' INTEGER,
+                    'status' TEXT,
+                    'score' BLOB,
+                    'reply' TEXT,
+                    'step_id' INTEGER,
+                    'user_id' INTEGER,
+                    FOREIGN KEY ('step_id') REFERENCES step_user('step_id') ON DELETE CASCADE
+                );""")
+    db.commit()
+# ------------ЗАПОЛНЕНИЕ ДАННЫМИ-------------------------------------------------
+
+    curs.execute("""INSERT INTO Step_type (step_type)
+                    SELECT DISTINCT step_type FROM CSV_Structure;""")
+    db.commit()
+
+    curs.execute("""INSERT INTO Module (module_id, module_position)
+                    SELECT DISTINCT module_id, module_position FROM CSV_Structure; """)
+    db.commit()
+
+    curs.execute("""INSERT INTO Lesson (lesson_id,lesson_position, module_id)
+                    SELECT DISTINCT lesson_id,lesson_position, module_id FROM CSV_Structure;""")
+    db.commit()
+
+    curs.execute("""INSERT INTO Step (step_id, step_position, step_cost,lesson_id, step_type)
+                    SELECT DISTINCT step_id, step_position, step_cost,lesson_id, step_type_id FROM CSV_Structure 
+                    INNER JOIN step_type 
+                    ON Step_type.step_type = CSV_Structure.step_type; """)
+    db.commit()
+    
+    curs.execute("""INSERT INTO User (user_id, first_name, last_name)
+                    SELECT DISTINCT user_id, first_name, last_name FROM CSV_Submissions; """)
+    db.commit()
+    
+        
+    curs.execute("""INSERT INTO Step_user(step_id, user_id)
+                    SELECT DISTINCT  step_id, user_id FROM CSV_Submissions; """)
+    db.commit()
+
+    curs.execute("""INSERT INTO Solution(attempt_time, submission_time, status, score, reply, step_id, user_id)
+                    SELECT attempt_time, submission_time, status, score, reply, step_id, user_id 
+                    FROM CSV_Submissions;""")
+    db.commit()
+
+# ----------------ЗАПРОС НА МОШЕННИЧЕСТВО--------------------------------------------------------------------------
+
+    curs.execute("""SELECT reply, count(*) OVER New AS c, step_id
+FROM Solution JOIN Step_user USING (user_step_id) JOIN Step USING (step_id)
+WHERE step_type = 4 and status = 'correct'
+WINDOW New 
+AS (PARTITION BY reply, step_id)
+ORDER BY c DESC;""")
+    
+
