@@ -17,4 +17,4 @@ async def get_step_result(step_id: int):
         )
         result = await session.execute(query)
         data = [dict(r._mapping) for r in result]
-    return {"messag": data}
+    return {"message": data}
