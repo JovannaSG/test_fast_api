@@ -1,6 +1,6 @@
-# FastAPI с SQLAlchemy и PostgreSQL
+# FastAPI приложение
 
-Современное FastAPI приложение с SQLAlchemy ORM, асинхронной работой с базой данных и миграциями Alembic.
+FastAPI приложение с SQLAlchemy ORM, асинхронной работой с базой
 
 ## Структура проекта
 
@@ -43,13 +43,6 @@
    DB_PASSWORD=your_password
    ```
 
-4. **Инициализируйте миграции:**
-   ```bash
-   alembic init alembic
-   alembic revision --autogenerate -m "Initial migration"
-   alembic upgrade head
-   ```
-
 ## Запуск приложения
 
 ```bash
@@ -81,28 +74,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ### Параметры пагинации
 - `skip` - количество записей для пропуска (по умолчанию: 0)
 - `limit` - максимальное количество записей (по умолчанию: 100, максимум: 1000)
-
-## Миграции
-
-### Создание новой миграции
-```bash
-alembic revision --autogenerate -m "Описание изменений"
-```
-
-### Применение миграций
-```bash
-alembic upgrade head
-```
-
-### Откат миграции
-```bash
-alembic downgrade -1
-```
-
-### Просмотр истории миграций
-```bash
-alembic history
-```
 
 ## Особенности проекта
 
