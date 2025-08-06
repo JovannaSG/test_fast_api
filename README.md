@@ -17,8 +17,6 @@
 ├── Routers/                       # Папка с роутерами FastAPI
 │   ├── tasks_router.py           # Роуты для управления задачами
 │   └── oauth_google_router.py    # Роут для получения Google OAuth2 URL
-├── alembic.ini                    # Конфигурация миграций
-├── alembic/                       # Папка с миграциями
 ├── requirements.txt               # Зависимости проекта
 └── README.md                      # Документация
 ```
