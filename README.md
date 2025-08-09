@@ -56,6 +56,18 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 # API Examples
 
+## API OAuth2
+
+### Получение OAuth2 ссылки Google
+
+```bash
+
+
+curl "http://localhost:8000/auth/google/url"
+
+
+```
+
 ## API для ролей
 
 ### Создать роль
