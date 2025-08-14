@@ -55,7 +55,7 @@ async def create_role(role: RoleCreate, db: AsyncSession = Depends(get_db)):
     repo = RoleRepository(db)
     
     # Проверяем уникальность названия роли
-    existing_role = await repo.get_by_name(role.name)
+    existing_role = await repo.get_by_name(role.role_name)
     if existing_role:
         raise HTTPException(
             status_code=400, 
@@ -87,8 +87,8 @@ async def update_role(
         raise HTTPException(status_code=404, detail="Роль не найдена")
     
     # Проверяем уникальность названия, если оно обновляется
-    if role_update.name:
-        name_role = await repo.get_by_name(role_update.name)
+    if role_update.role_name:
+        name_role = await repo.get_by_name(role_update.role_name)
         if name_role and name_role.role_id != role_id:
             raise HTTPException(
                 status_code=400,
@@ -118,7 +118,7 @@ async def delete_role(role_id: int, db: AsyncSession = Depends(get_db)):
     try:
         success = await repo.delete(role_id)
         if success:
-            return {"message": f"Роль '{role.name}' удалена"}
+            return {"message": f"Роль '{role.role_name}' удалена"}
         else:
             raise HTTPException(status_code=404, detail="Роль не найдена")
     except IntegrityError:
