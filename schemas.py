@@ -8,15 +8,15 @@ import re
 class RoleBase(BaseModel):
     """Базовая схема для ролей"""
     role_name: str = Field(
-        ...,
-        min_length=1, max_length=50,
+        min_length=1,
+        max_length=50,
         description="Название роли"
     )
 
 
 class RoleCreate(RoleBase):
     """Схема для создания роли"""
-    pass
+    role_name: str
 
 
 class RoleUpdate(BaseModel):
@@ -41,8 +41,16 @@ class RoleList(BaseModel):
 # Схемы для пользователей
 class UserBase(BaseModel):
     """Базовая схема для пользователей"""
-    full_name: str = Field(min_length=2, max_length=150, description="ФИО (минимум 2 слова)")
-    phone_number: str = Field(min_length=7, max_length=20, description="Номер телефона")
+    full_name: str = Field(
+        min_length=2,
+        max_length=150,
+        description="ФИО (минимум 2 слова)"
+    )
+    phone_number: str = Field(
+        min_length=7,
+        max_length=20,
+        description="Номер телефона"
+    )
     email: EmailStr = Field(description="Электронная почта")
     description: Optional[str] = Field(None, description="Описание")
     role_id: int = Field(gt=0, description="ID роли")

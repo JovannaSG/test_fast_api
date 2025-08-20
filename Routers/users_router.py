@@ -128,7 +128,7 @@ async def delete_role(role_id: int, db: AsyncSession = Depends(get_db)):
         )
 
 
-# === ЭНДПОИНТЫ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ ===
+# === USER'S ENDPOINTS ===
 
 @router.get("/", response_model=UserListWithRoles)
 async def get_users(
@@ -263,7 +263,7 @@ async def create_user(
     try:
         new_user = await repo.create(user)
         # Получаем пользователя с ролью для ответа
-        user_with_role = await repo.get_by_id(new_user.id, include_role=True)
+        user_with_role = await repo.get_by_id(new_user.role_id, include_role=True)
         return UserWithRoleResponse.model_validate(user_with_role, from_attributes=True)
     except IntegrityError:
         raise HTTPException(
