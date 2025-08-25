@@ -130,3 +130,10 @@ class UserListWithRoles(BaseModel):
     """Схема для списка пользователей с ролями"""
     users: list[UserWithRoleResponse]
     total: int
+
+
+# ======= LOGIN SCHEMAS =======
+
+class UserLoginSchema(BaseModel):
+    username: str
+    password: str

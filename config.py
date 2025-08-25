@@ -1,4 +1,5 @@
 import os
+from authx import AuthX, AuthXConfig
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 
@@ -28,3 +29,11 @@ class Settings(BaseSettings):
     OAUTH_GOOGLE_CLIENT_ID: str
 
 settings = Settings()
+
+
+config = AuthXConfig()
+config.JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+config.JWT_ACCESS_COOKIE_NAME = "my_access_token"
+config.JWT_TOKEN_LOCATION = ["cookies"]
+
+security: AuthX = AuthX(config=config)

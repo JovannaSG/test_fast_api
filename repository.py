@@ -89,7 +89,12 @@ class UserRepository:
         include_role: bool = False
     ) -> List[UserModel]:
         """Получить всех пользователей с пагинацией"""
-        query = select(UserModel).offset(skip).limit(limit).order_by(UserModel.user_id)
+        query = (
+            select(UserModel)
+            .offset(skip)
+            .limit(limit)
+            .order_by(UserModel.user_id)
+        )
         
         if include_role:
             query = query.options(selectinload(UserModel.role))
@@ -97,8 +102,22 @@ class UserRepository:
         result = await self.session.execute(query)
         return result.scalars().all()
 
-    async def get_by_id(self, user_id: int, include_role: bool = False) -> Optional[UserModel]:
-        """Получить пользователя по ID"""
+    async def get_by_id(
+        self,
+        user_id: int,
+        include_role: bool = False
+    ) -> Optional[UserModel]:
+        """
+        Получить пользователя по ID
+        
+        Args:
+            user_id: Идентификатор пользователя
+            include_role: Если True, включает роль пользователя в результат
+            
+        Returns:
+            UserModel: Объект пользователя, если найден
+            None: Если пользователь не существует
+        """
         query = select(UserModel).where(UserModel.user_id == user_id)
         
         if include_role:
@@ -107,7 +126,11 @@ class UserRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_email(self, email: str, include_role: bool = False) -> Optional[UserModel]:
+    async def get_by_email(
+        self,
+        email: str,
+        include_role: bool = False
+    ) -> Optional[UserModel]:
         """Получить пользователя по email"""
         query = select(UserModel).where(UserModel.email == email)
         
@@ -117,7 +140,11 @@ class UserRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_phone(self, phone_number: str, include_role: bool = False) -> Optional[UserModel]:
+    async def get_by_phone(
+        self,
+        phone_number: str,
+        include_role: bool = False
+    ) -> Optional[UserModel]:
         """Получить пользователя по номеру телефона"""
         query = select(UserModel).where(UserModel.phone_number == phone_number)
         
@@ -180,7 +207,20 @@ class UserRepository:
         user_id: int,
         new_role_id: int
     ) -> Optional[UserModel]:
-        """Изменить роль пользователя"""
+        """
+        Изменить роль пользователя
+        
+        Args:
+            user_id: Идентификатор пользователя
+            new_role_id: Новый идентификатор роли
+            
+        Returns:
+            UserModel: Обновленный объект пользователя
+            None: Если пользователь не найден
+            
+        Raises:
+            ValueError: Если роль с таким ID не существует
+        """
         query = (
             update(UserModel)
             .where(UserModel.user_id == user_id)
@@ -199,7 +239,11 @@ class UserRepository:
         result = await self.session.execute(query)
         return len(result.scalars().all())
 
-    async def get_by_role_id(self, role_id: int, include_role: bool = False) -> List[UserModel]:
+    async def get_by_role_id(
+        self,
+        role_id: int, 
+        include_role: bool = False
+    ) -> List[UserModel]:
         """Получить пользователей по ID роли"""
         query = select(UserModel).where(UserModel.role_id == role_id)
         
@@ -209,7 +253,11 @@ class UserRepository:
         result = await self.session.execute(query)
         return result.scalars().all()
 
-    async def get_by_role_name(self, role_name: str, include_role: bool = False) -> List[UserModel]:
+    async def get_by_role_name(
+        self,
+        role_name: str,
+        include_role: bool = False
+    ) -> List[UserModel]:
         """Получить пользователей по названию роли"""
         query = (
             select(UserModel)
@@ -228,3 +276,36 @@ class UserRepository:
         query = select(RoleModel.role_id).where(RoleModel.role_id == role_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none() is not None
+
+    async def authenticate(
+        self,
+        login: str,
+        password: str
+    ) -> Optional[UserModel]:
+        """
+        Проверяет учетные данные пользователя
+        
+        Args:
+            login (str): Логин пользователя
+            password (str): Пароль пользователя
+            
+        Returns:
+            UserModel: Объект пользователя, если аутентификация успешна
+            None: Если пользователь не найден или пароль неверен
+        """
+        # Получаем пользователя по логину
+        query = (
+            select(UserModel)
+            .where(
+                UserModel.login == login
+                and UserModel.password == password
+            )
+        )
+        result = await self.session.execute(query)
+        user = result.scalar_one_or_none()
+        
+        # Проверяем существование пользователя и корректность пароля
+        if user:
+            return user
+
+        return None

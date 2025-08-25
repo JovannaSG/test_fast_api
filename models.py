@@ -3,6 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
+import bcrypt
+
 Base = declarative_base()
 
 
@@ -29,9 +31,24 @@ class UserModel(Base):
     phone_number = Column(String(20), nullable=False, unique=True)
     email = Column(String(100), nullable=False, unique=True)
     description = Column(Text, nullable=True)
-    role_id = Column(Integer, ForeignKey("roles.role_id", ondelete="RESTRICT"), nullable=False)
-    created_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_at = Column(DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now())
+    role_id = Column(
+        Integer,
+        ForeignKey("roles.role_id", ondelete="RESTRICT"),
+        nullable=False
+    )
+    created_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now()
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        onupdate=func.now()
+    )
+    login = Column(String(0), unique=True)
+    password = Column(String(20), unique=True) 
 
     # Связь с ролью
     role = relationship("RoleModel", back_populates="users")
@@ -43,3 +60,17 @@ class UserModel(Base):
             email='{self.email}',
             role_id={self.role_id})>
         """
+
+    def set_password(self, password: str) -> None:
+        """Хеширует пароль перед сохранением"""
+        self.password = bcrypt.hashpw(
+            password.encode("utf-8"),
+            bcrypt.gensalt()
+        ).decode("utf-8")
+
+    def verify_password(self, password: str) -> bool:
+        """Проверяет соответствие введенного пароля хешу"""
+        return bcrypt.checkpw(
+            password.encode("utf-8"),
+            self.password.encode("utf-8")
+        )

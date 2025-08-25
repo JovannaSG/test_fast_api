@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from database import create_tables
 from Routers.users_router import router as users_router, roles_router
 from Routers.oauth_google_router import router as oauth_google_router
+from Routers.login_router import router as login_router
 
 
 @asynccontextmanager
@@ -28,6 +29,7 @@ app = FastAPI(
 app.include_router(users_router)
 app.include_router(roles_router)
 app.include_router(oauth_google_router)
+app.include_router(login_router)
 
 
 @app.get("/")
